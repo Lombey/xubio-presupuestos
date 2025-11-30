@@ -2,8 +2,8 @@
 
 // Proxy CORS para evitar bloqueos del navegador
 // Opciones: 'direct' (sin proxy), 'corsproxy', 'allorigins'
-// Probamos directo ya que el dominio está configurado en Xubio
-const CORS_PROXY_MODE = 'direct'
+// corsproxy.io causa error 500, probamos allorigins
+const CORS_PROXY_MODE = 'allorigins'
 
 const CORS_PROXIES = {
   direct: '',
