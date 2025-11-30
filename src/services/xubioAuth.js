@@ -22,7 +22,8 @@ const getProxiedUrl = (url) => {
 
 const BASE_URL = 'https://xubio.com'
 const API_BASE = `${BASE_URL}/API/1.1`
-const TOKEN_URL = `${BASE_URL}/API/Login`
+// Probar diferentes endpoints de login
+const TOKEN_URL = `${API_BASE}/login`
 
 // Exportar para uso en otros módulos
 export { getProxiedUrl, API_BASE }
