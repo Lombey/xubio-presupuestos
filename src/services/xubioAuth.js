@@ -2,7 +2,8 @@
 
 // Proxy CORS para evitar bloqueos del navegador
 // Opciones: 'direct' (sin proxy), 'corsproxy', 'allorigins'
-const CORS_PROXY_MODE = 'corsproxy'
+// Con dominio configurado en Xubio, usamos conexión directa
+const CORS_PROXY_MODE = 'direct'
 
 const CORS_PROXIES = {
   direct: '',
