@@ -1,0 +1,204 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "API de Xubio - Documentación de referencia",
+    "version": "1.1",
+    "title": "Xubio API"
+  },
+  "host": "xubio.com:443",
+  "basePath": "/API/1.1",
+  "tags": [
+    {"name": "presupuesto", "description": "Operaciones sobre Presupuestos"},
+    {"name": "cliente", "description": "Operaciones sobre Clientes"},
+    {"name": "productoVenta", "description": "Productos de Venta"},
+    {"name": "miempresa", "description": "Datos de Mi Empresa"},
+    {"name": "puntoVenta", "description": "Puntos de Venta"},
+    {"name": "moneda", "description": "Monedas"},
+    {"name": "ImprimirPdf", "description": "Imprimir documentos PDF"}
+  ],
+  "paths": {
+    "/presupuesto": {
+      "get": {
+        "tags": ["presupuesto"],
+        "summary": "Obtiene listado de Presupuestos",
+        "operationId": "getPresupuestos",
+        "produces": ["application/json"],
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "successful operation"}}
+      },
+      "post": {
+        "tags": ["presupuesto"],
+        "summary": "Crea un nuevo Presupuesto",
+        "operationId": "postPresupuesto",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "successful operation"}}
+      }
+    },
+    "/presupuesto/{id}": {
+      "get": {
+        "tags": ["presupuesto"],
+        "summary": "Obtiene un Presupuesto determinado",
+        "parameters": [{"name": "id", "in": "path", "required": true, "type": "integer"}],
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "successful operation"}}
+      },
+      "put": {
+        "tags": ["presupuesto"],
+        "summary": "Actualiza un Presupuesto",
+        "parameters": [{"name": "id", "in": "path", "required": true, "type": "integer"}],
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "successful operation"}}
+      },
+      "delete": {
+        "tags": ["presupuesto"],
+        "summary": "Elimina un Presupuesto",
+        "parameters": [{"name": "id", "in": "path", "required": true, "type": "integer"}],
+        "security": [{"api_auth": []}],
+        "responses": {"default": {"description": "successful operation"}}
+      }
+    },
+    "/cliente": {
+      "get": {
+        "tags": ["cliente"],
+        "summary": "Obtiene listado de Clientes",
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "successful operation"}}
+      },
+      "post": {
+        "tags": ["cliente"],
+        "summary": "Crea un nuevo Cliente",
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "successful operation"}}
+      }
+    },
+    "/cliente/{id}": {
+      "get": {
+        "tags": ["cliente"],
+        "summary": "Obtiene un Cliente determinado",
+        "parameters": [{"name": "id", "in": "path", "required": true, "type": "integer"}],
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "successful operation"}}
+      }
+    },
+    "/productoVenta": {
+      "get": {
+        "tags": ["productoVenta"],
+        "summary": "Obtiene listado de Productos de Venta",
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "successful operation"}}
+      }
+    },
+    "/miempresa": {
+      "get": {
+        "tags": ["miempresa"],
+        "summary": "Obtiene los datos de Mi Empresa",
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "successful operation"}}
+      }
+    },
+    "/puntoVenta": {
+      "get": {
+        "tags": ["puntoVenta"],
+        "summary": "Obtiene listado de Puntos de Venta",
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "successful operation"}}
+      }
+    },
+    "/moneda": {
+      "get": {
+        "tags": ["moneda"],
+        "summary": "Obtiene listado de Monedas",
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "successful operation"}}
+      }
+    },
+    "/ImprimirPdf/presupuesto/{id}": {
+      "get": {
+        "tags": ["ImprimirPdf"],
+        "summary": "Descarga PDF del presupuesto",
+        "parameters": [{"name": "id", "in": "path", "required": true, "type": "integer"}],
+        "security": [{"api_auth": []}],
+        "responses": {"200": {"description": "PDF file"}}
+      }
+    }
+  },
+  "definitions": {
+    "PresupuestoBean": {
+      "type": "object",
+      "properties": {
+        "transaccionId": {"type": "integer", "format": "int64"},
+        "cliente": {"$ref": "#/definitions/ClienteBeanSelector"},
+        "fecha": {"type": "string", "format": "date", "example": "2024-01-15"},
+        "fechaVto": {"type": "string", "format": "date", "example": "2024-02-15"},
+        "puntoVenta": {"$ref": "#/definitions/PuntoVentaBeanSelector"},
+        "numeroDocumento": {"type": "string"},
+        "condicionDePago": {"type": "integer", "description": "1=Cuenta Corriente, 2=Contado"},
+        "moneda": {"$ref": "#/definitions/MonedaBean"},
+        "cotizacion": {"type": "number"},
+        "importetotal": {"type": "number"},
+        "importeImpuestos": {"type": "number"},
+        "importeGravado": {"type": "number"},
+        "descripcion": {"type": "string"},
+        "transaccionProductoItems": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/TransaccionProductoItems"}
+        }
+      }
+    },
+    "ClienteBeanSelector": {
+      "type": "object",
+      "properties": {
+        "clienteid": {"type": "integer", "format": "int64"},
+        "nombre": {"type": "string"},
+        "razonSocial": {"type": "string"},
+        "cuit": {"type": "string"}
+      }
+    },
+    "PuntoVentaBeanSelector": {
+      "type": "object",
+      "properties": {
+        "puntoVentaId": {"type": "integer", "format": "int64"},
+        "nombre": {"type": "string"},
+        "codigo": {"type": "string"}
+      }
+    },
+    "MonedaBean": {
+      "type": "object",
+      "properties": {
+        "ID": {"type": "integer", "format": "int64"},
+        "nombre": {"type": "string"},
+        "codigo": {"type": "string"},
+        "simbolo": {"type": "string"}
+      }
+    },
+    "TransaccionProductoItems": {
+      "type": "object",
+      "properties": {
+        "productoVenta": {"$ref": "#/definitions/ProductoVentaBeanSelector"},
+        "cantidad": {"type": "number"},
+        "precioUnitario": {"type": "number"},
+        "bonificacion": {"type": "number"},
+        "descripcion": {"type": "string"}
+      }
+    },
+    "ProductoVentaBeanSelector": {
+      "type": "object",
+      "properties": {
+        "productoid": {"type": "integer", "format": "int64"},
+        "nombre": {"type": "string"},
+        "codigo": {"type": "string"}
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_auth": {
+      "type": "oauth2",
+      "flow": "application",
+      "tokenUrl": "https://xubio.com/API/Login",
+      "description": "OAuth2 client_credentials flow"
+    }
+  }
+}
+
