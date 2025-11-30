@@ -20,10 +20,10 @@ const getProxiedUrl = (url) => {
   return `${proxy}${encodeURIComponent(url)}`
 }
 
-const BASE_URL = 'https://xubio.com'
+// Xubio usa main.xubio.com como servidor principal
+const BASE_URL = 'https://main.xubio.com'
 const API_BASE = `${BASE_URL}/API/1.1`
-// Probar diferentes endpoints de login
-const TOKEN_URL = `${API_BASE}/login`
+const TOKEN_URL = `${BASE_URL}/API/Login`
 
 // Exportar para uso en otros módulos
 export { getProxiedUrl, API_BASE }
