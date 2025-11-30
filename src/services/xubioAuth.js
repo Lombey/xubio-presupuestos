@@ -20,10 +20,10 @@ const getProxiedUrl = (url) => {
   return `${proxy}${encodeURIComponent(url)}`
 }
 
-// Xubio usa main.xubio.com como servidor principal
-const BASE_URL = 'https://main.xubio.com'
+// Xubio API - URLs según documentación oficial
+const BASE_URL = 'https://xubio.com'
 const API_BASE = `${BASE_URL}/API/1.1`
-const TOKEN_URL = `${BASE_URL}/API/Login`
+const TOKEN_URL = `${API_BASE}/TokenEndpoint`
 
 // Exportar para uso en otros módulos
 export { getProxiedUrl, API_BASE }
@@ -81,16 +81,16 @@ export const getAccessToken = async () => {
   }
 
   try {
+    // Usar Basic Auth según documentación de Xubio
+    const basicAuth = btoa(`${credentials.clientId}:${credentials.secretId}`)
+    
     const response = await fetch(getProxiedUrl(TOKEN_URL), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${basicAuth}`
       },
-      body: new URLSearchParams({
-        'grant_type': 'client_credentials',
-        'client_id': credentials.clientId,
-        'client_secret': credentials.secretId,
-      })
+      body: 'grant_type=client_credentials'
     })
 
     if (!response.ok) {
