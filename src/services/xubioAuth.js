@@ -1,7 +1,27 @@
 // Servicio de autenticación OAuth2 para Xubio API
+
+// Proxy CORS para evitar bloqueos del navegador
+// Opciones: 'direct' (sin proxy), 'corsproxy', 'allorigins'
+const CORS_PROXY_MODE = 'corsproxy'
+
+const CORS_PROXIES = {
+  direct: '',
+  corsproxy: 'https://corsproxy.io/?',
+  allorigins: 'https://api.allorigins.win/raw?url='
+}
+
+const getProxiedUrl = (url) => {
+  const proxy = CORS_PROXIES[CORS_PROXY_MODE] || ''
+  if (!proxy) return url
+  return `${proxy}${encodeURIComponent(url)}`
+}
+
 const BASE_URL = 'https://xubio.com'
 const API_BASE = `${BASE_URL}/API/1.1`
 const TOKEN_URL = `${BASE_URL}/API/Login`
+
+// Exportar para uso en otros módulos
+export { getProxiedUrl, API_BASE }
 
 // Obtener credenciales del localStorage
 export const getCredentials = () => {
@@ -56,7 +76,7 @@ export const getAccessToken = async () => {
   }
 
   try {
-    const response = await fetch(TOKEN_URL, {
+    const response = await fetch(getProxiedUrl(TOKEN_URL), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -96,7 +116,7 @@ export const getAccessToken = async () => {
 export const testConnection = async () => {
   try {
     const token = await getAccessToken()
-    const response = await fetch(`${API_BASE}/miempresa`, {
+    const response = await fetch(getProxiedUrl(`${API_BASE}/miempresa`), {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -123,7 +143,7 @@ export const authenticatedFetch = async (endpoint, options = {}) => {
     'Content-Type': 'application/json'
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const response = await fetch(getProxiedUrl(`${API_BASE}${endpoint}`), {
     ...options,
     headers: {
       ...defaultHeaders,

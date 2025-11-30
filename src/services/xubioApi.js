@@ -1,5 +1,5 @@
 // Servicios para interactuar con los endpoints de Xubio API
-import { authenticatedFetch, getAccessToken } from './xubioAuth'
+import { authenticatedFetch, getAccessToken, getProxiedUrl, API_BASE } from './xubioAuth'
 
 // ==================== CLIENTES ====================
 export const getClientes = async () => {
@@ -90,7 +90,7 @@ export const getCondicionesPago = () => {
 export const getPresupuestoPDF = async (id) => {
   const token = await getAccessToken()
   
-  const response = await fetch(`https://xubio.com/API/1.1/ImprimirPdf/presupuesto/${id}`, {
+  const response = await fetch(getProxiedUrl(`${API_BASE}/ImprimirPdf/presupuesto/${id}`), {
     headers: {
       'Authorization': `Bearer ${token}`
     }
