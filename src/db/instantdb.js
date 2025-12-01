@@ -27,13 +27,19 @@ export const usePresupuestosLocales = () => {
 
 // Funciones para guardar datos
 export const saveClientes = async (clientes) => {
-  // Filtrar clientes sin ID válido y generar IDs para InstantDB
+  // Filtrar clientes sin ID válido
   const validClientes = clientes.filter(c => c && (c.clienteid || c.ID || c.id))
+  
+  // Primero, obtener clientes existentes para evitar duplicados
+  const { clientes: existingClientes } = await db.queryOnce({ clientes: {} })
+  const existingMap = new Map((existingClientes || []).map(c => [c.clienteid, c.id]))
   
   const txs = validClientes.map(cliente => {
     // Xubio puede usar clienteid, ID, o id
     const clienteId = cliente.clienteid || cliente.ID || cliente.id
-    const instantId = `cliente-${clienteId}`
+    
+    // Usar ID existente si ya existe, sino generar nuevo UUID
+    const instantId = existingMap.get(clienteId) || db.id()
     
     return db.tx.clientes[instantId].update({
       clienteid: clienteId,
@@ -59,18 +65,25 @@ export const saveProductos = async (productos) => {
   // Filtrar productos sin ID válido
   const validProductos = productos.filter(p => p && (p.productoid || p.ID || p.id))
   
+  // Primero, obtener productos existentes para evitar duplicados
+  const { productos: existingProductos } = await db.queryOnce({ productos: {} })
+  const existingMap = new Map((existingProductos || []).map(p => [p.productoid, p.id]))
+  
   const txs = validProductos.map(producto => {
     // Xubio puede usar productoid, ID, o id
     const productoId = producto.productoid || producto.ID || producto.id
-    const instantId = `producto-${productoId}`
+    
+    // Usar ID existente si ya existe, sino generar nuevo UUID
+    const instantId = existingMap.get(productoId) || db.id()
     
     return db.tx.productos[instantId].update({
       productoid: productoId,
-      nombre: producto.nombre || producto.Nombre || '',
-      codigo: producto.codigo || producto.Codigo || '',
-      usrcode: producto.usrcode || producto.Usrcode || '',
-      codigoBarra: producto.codigoBarra || producto.CodigoBarra || '',
-      precioVenta: producto.precioVenta || producto.PrecioVenta || 0,
+      nombre: producto.nombre || '',
+      codigo: producto.codigo || '',
+      usrcode: producto.usrcode || '',
+      codigoBarra: producto.codigoBarra || '',
+      precioUltCompra: producto.precioUltCompra || 0,
+      activo: producto.activo || 0,
       syncedAt: new Date().toISOString()
     })
   })
