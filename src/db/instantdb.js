@@ -30,28 +30,28 @@ export const usePresupuestosLocales = () => {
 
 // Funciones para guardar datos
 export const saveClientes = async (clientes) => {
-  // Filtrar clientes sin ID válido
-  const validClientes = clientes.filter(c => c && (c.clienteid || c.ID || c.id))
+  // Filtrar clientes sin ID válido (Xubio usa cliente_id con guión bajo)
+  const validClientes = clientes.filter(c => c && (c.cliente_id || c.clienteid || c.ID || c.id))
   
   // Primero, obtener clientes existentes para evitar duplicados
   const { clientes: existingClientes } = await db.queryOnce({ clientes: {} })
   const existingMap = new Map((existingClientes || []).map(c => [c.clienteid, c.id]))
   
   const txs = validClientes.map(cliente => {
-    // Xubio puede usar clienteid, ID, o id
-    const clienteId = cliente.clienteid || cliente.ID || cliente.id
+    // Xubio usa cliente_id (con guión bajo)
+    const clienteId = cliente.cliente_id || cliente.clienteid || cliente.ID || cliente.id
     
     // Usar ID existente si ya existe, sino generar nuevo UUID
     const instantId = existingMap.get(clienteId) || generateId()
     
     return db.tx.clientes[instantId].update({
       clienteid: clienteId,
-      nombre: cliente.nombre || cliente.razonSocial || '',
+      nombre: cliente.nombre || cliente.razonSocial || cliente.nombreComercial || '',
       razonSocial: cliente.razonSocial || '',
       cuit: cliente.cuit || cliente.CUIT || '',
-      email: cliente.email || cliente.Email || '',
-      telefono: cliente.telefono || cliente.Telefono || '',
-      direccion: cliente.direccion || cliente.Direccion || '',
+      email: cliente.email || '',
+      telefono: cliente.telefono || '',
+      direccion: cliente.direccion || '',
       syncedAt: new Date().toISOString()
     })
   })
