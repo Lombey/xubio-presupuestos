@@ -1,8 +1,11 @@
-import { init } from '@instantdb/react'
+import { init, id } from '@instantdb/react'
 
 const APP_ID = '4a6ce7cc-945e-49f1-acac-918ef071770c'
 
 export const db = init({ appId: APP_ID })
+
+// Función para generar IDs válidos
+const generateId = () => id()
 
 // Helpers para trabajar con InstantDB
 export const useClientes = () => {
@@ -39,7 +42,7 @@ export const saveClientes = async (clientes) => {
     const clienteId = cliente.clienteid || cliente.ID || cliente.id
     
     // Usar ID existente si ya existe, sino generar nuevo UUID
-    const instantId = existingMap.get(clienteId) || db.id()
+    const instantId = existingMap.get(clienteId) || generateId()
     
     return db.tx.clientes[instantId].update({
       clienteid: clienteId,
@@ -74,7 +77,7 @@ export const saveProductos = async (productos) => {
     const productoId = producto.productoid || producto.ID || producto.id
     
     // Usar ID existente si ya existe, sino generar nuevo UUID
-    const instantId = existingMap.get(productoId) || db.id()
+    const instantId = existingMap.get(productoId) || generateId()
     
     return db.tx.productos[instantId].update({
       productoid: productoId,
