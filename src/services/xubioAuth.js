@@ -1,21 +1,20 @@
 // Servicio de autenticación OAuth2 para Xubio API
 
 // Proxy CORS para evitar bloqueos del navegador
-// Opciones: 'direct' (sin proxy), 'corsproxy', 'allorigins'
-// corsproxy.io causa error 500, probamos allorigins
-const CORS_PROXY_MODE = 'allorigins'
+const CORS_PROXY_MODE = 'thingproxy'
 
 const CORS_PROXIES = {
   direct: '',
   corsproxy: 'https://corsproxy.io/?',
-  allorigins: 'https://api.allorigins.win/raw?url='
+  allorigins: 'https://api.allorigins.win/raw?url=',
+  thingproxy: 'https://thingproxy.freeboard.io/fetch/'
 }
 
 const getProxiedUrl = (url) => {
   const proxy = CORS_PROXIES[CORS_PROXY_MODE] || ''
   if (!proxy) return url
-  // corsproxy.io no necesita encoding, solo concatenar la URL
-  if (CORS_PROXY_MODE === 'corsproxy') {
+  // Algunos proxies no necesitan encoding
+  if (CORS_PROXY_MODE === 'corsproxy' || CORS_PROXY_MODE === 'thingproxy') {
     return `${proxy}${url}`
   }
   return `${proxy}${encodeURIComponent(url)}`
