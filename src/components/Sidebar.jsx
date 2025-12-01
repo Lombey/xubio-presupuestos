@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { getCredentials, getStoredToken } from '../services/xubioAuth'
 
 const tabs = [
   { id: 'presupuestos', label: 'Presupuestos', icon: '📋' },
@@ -11,9 +12,10 @@ export default function Sidebar({ activeTab, setActiveTab }) {
   const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
-    // Verificar si hay credenciales guardadas
-    const credentials = localStorage.getItem('xubio_credentials')
-    setIsConnected(!!credentials)
+    // Verificar si hay credenciales locales O token válido (credenciales del servidor)
+    const hasCredentials = getCredentials()
+    const hasToken = getStoredToken()
+    setIsConnected(!!(hasCredentials || hasToken))
   }, [activeTab])
 
   return (

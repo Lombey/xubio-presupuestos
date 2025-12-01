@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useProductos, saveProductos } from '../db/instantdb'
 import { getProductosVenta } from '../services/xubioApi'
-import { getCredentials } from '../services/xubioAuth'
+import { getCredentials, getStoredToken } from '../services/xubioAuth'
 
 export default function Productos() {
   const { isLoading, error, data } = useProductos()
@@ -10,7 +10,8 @@ export default function Productos() {
   const [searchTerm, setSearchTerm] = useState('')
 
   const productos = data?.productos || []
-  const isConnected = !!getCredentials()
+  // Verificar si hay credenciales locales O un token válido (credenciales del servidor)
+  const isConnected = !!(getCredentials() || getStoredToken())
 
   const handleSync = async () => {
     if (!isConnected) {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useClientes, saveClientes } from '../db/instantdb'
 import { getClientes } from '../services/xubioApi'
-import { getCredentials } from '../services/xubioAuth'
+import { getCredentials, getStoredToken } from '../services/xubioAuth'
 
 export default function Clientes() {
   const { isLoading, error, data } = useClientes()
@@ -10,7 +10,8 @@ export default function Clientes() {
   const [searchTerm, setSearchTerm] = useState('')
 
   const clientes = data?.clientes || []
-  const isConnected = !!getCredentials()
+  // Verificar si hay credenciales locales O un token válido (credenciales del servidor)
+  const isConnected = !!(getCredentials() || getStoredToken())
 
   const handleSync = async () => {
     if (!isConnected) {

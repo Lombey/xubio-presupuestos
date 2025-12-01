@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useClientes, useProductos } from '../db/instantdb'
 import { getPresupuestos, createPresupuesto, deletePresupuesto, getPresupuestoPDF, buildPresupuestoBean } from '../services/xubioApi'
-import { getCredentials } from '../services/xubioAuth'
+import { getCredentials, getStoredToken } from '../services/xubioAuth'
 
 export default function Presupuestos() {
   const [presupuestos, setPresupuestos] = useState([])
@@ -15,7 +15,8 @@ export default function Presupuestos() {
   
   const clientes = clientesData?.clientes || []
   const productos = productosData?.productos || []
-  const isConnected = !!getCredentials()
+  // Verificar si hay credenciales locales O un token válido (credenciales del servidor)
+  const isConnected = !!(getCredentials() || getStoredToken())
 
   // Form state
   const [formData, setFormData] = useState({
