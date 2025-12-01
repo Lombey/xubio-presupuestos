@@ -15,7 +15,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Token no proporcionado' })
     }
 
-    const response = await fetch(`${XUBIO_API}/cliente`, {
+    const response = await fetch(`${XUBIO_API}/clienteBean`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'

@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   try {
     // GET - Obtener presupuesto específico
     if (req.method === 'GET') {
-      const response = await fetch(`${XUBIO_API}/presupuesto/${id}`, {
+      const response = await fetch(`${XUBIO_API}/presupuestoBean/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
 
     // DELETE - Eliminar presupuesto
     if (req.method === 'DELETE') {
-      const response = await fetch(`${XUBIO_API}/presupuesto/${id}`, {
+      const response = await fetch(`${XUBIO_API}/presupuestoBean/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   try {
     // GET - Listar presupuestos
     if (req.method === 'GET') {
-      const response = await fetch(`${XUBIO_API}/presupuesto`, {
+      const response = await fetch(`${XUBIO_API}/presupuestoBean`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
 
     // POST - Crear presupuesto
     if (req.method === 'POST') {
-      const response = await fetch(`${XUBIO_API}/presupuesto`, {
+      const response = await fetch(`${XUBIO_API}/presupuestoBean`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
