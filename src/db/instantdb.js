@@ -28,6 +28,17 @@ export const usePresupuestosLocales = () => {
   return db.useQuery({ presupuestosLocales: {} })
 }
 
+// Tamaño del lote para evitar "too-many-arguments" en InstantDB
+const BATCH_SIZE = 50
+
+// Función helper para guardar en lotes
+const transactInBatches = async (txs) => {
+  for (let i = 0; i < txs.length; i += BATCH_SIZE) {
+    const batch = txs.slice(i, i + BATCH_SIZE)
+    await db.transact(batch)
+  }
+}
+
 // Funciones para guardar datos
 export const saveClientes = async (clientes) => {
   // Filtrar clientes sin ID válido (Xubio usa cliente_id con guión bajo)
@@ -61,7 +72,8 @@ export const saveClientes = async (clientes) => {
     return
   }
   
-  return db.transact(txs)
+  // Guardar en lotes para evitar "too-many-arguments"
+  return transactInBatches(txs)
 }
 
 export const saveProductos = async (productos) => {
@@ -96,7 +108,8 @@ export const saveProductos = async (productos) => {
     return
   }
   
-  return db.transact(txs)
+  // Guardar en lotes para evitar "too-many-arguments"
+  return transactInBatches(txs)
 }
 
 export const savePuntosVenta = async (puntosVenta) => {
