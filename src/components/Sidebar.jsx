@@ -25,7 +25,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
         <h1 className="text-2xl font-bold bg-gradient-to-r from-xubio-400 to-xubio-300 bg-clip-text text-transparent">
           Xubio
         </h1>
-        <p className="text-dark-400 text-sm mt-1">Presupuestos API <span className="text-xubio-500 font-mono">v1.0.7</span></p>
+        <p className="text-dark-400 text-sm mt-1">Presupuestos API <span className="text-xubio-500 font-mono">v1.0.8</span></p>
       </div>
 
       {/* Estado de conexión */}

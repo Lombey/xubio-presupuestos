@@ -8,41 +8,73 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  const token = req.headers.authorization?.replace('Bearer ', '')
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' })
+  }
+
+  // Probar con productoVentaBean (como clientes usa clienteBean)
+  const endpoint = `${XUBIO_API}/productoVentaBean`
+  
+  let response
   try {
-    const token = req.headers.authorization?.replace('Bearer ', '')
-
-    if (!token) {
-      return res.status(401).json({ error: 'Token no proporcionado' })
-    }
-
-    const response = await fetch(`${XUBIO_API}/productoVenta`, {
+    response = await fetch(endpoint, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      return res.status(response.status).json({ 
-        error: 'Error obteniendo productos',
-        status: response.status,
-        statusText: response.statusText,
-        details: errorText,
-        endpoint: `${XUBIO_API}/productoVenta`
-      })
-    }
-
-    const data = await response.json()
-    return res.status(200).json(data)
-
-  } catch (error) {
-    console.error('Error en /api/productos:', error)
+  } catch (fetchError) {
     return res.status(500).json({ 
-      error: 'Error interno del servidor',
-      message: error.message,
-      stack: error.stack
+      error: 'Error en fetch',
+      message: fetchError.message,
+      endpoint: endpoint
     })
   }
+
+  // Si productoVentaBean falla con 404, probar productoVenta
+  if (response.status === 404) {
+    try {
+      response = await fetch(`${XUBIO_API}/productoVenta`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+    } catch (fetchError) {
+      return res.status(500).json({ 
+        error: 'Error en fetch (fallback)',
+        message: fetchError.message
+      })
+    }
+  }
+
+  if (!response.ok) {
+    let errorText = ''
+    try {
+      errorText = await response.text()
+    } catch (e) {
+      errorText = 'No se pudo leer el error'
+    }
+    return res.status(response.status).json({ 
+      error: 'Error obteniendo productos',
+      status: response.status,
+      statusText: response.statusText,
+      details: errorText
+    })
+  }
+
+  let data
+  try {
+    data = await response.json()
+  } catch (jsonError) {
+    return res.status(500).json({ 
+      error: 'Error parseando JSON',
+      message: jsonError.message
+    })
+  }
+
+  return res.status(200).json(data)
 }
 
