@@ -24,14 +24,26 @@ export default function Clientes() {
     
     try {
       const clientesFromApi = await getClientes()
+      console.log('Datos recibidos de Xubio:', clientesFromApi)
       
-      if (Array.isArray(clientesFromApi)) {
-        await saveClientes(clientesFromApi)
-        setSyncMessage(`✓ ${clientesFromApi.length} clientes sincronizados`)
-      } else if (clientesFromApi) {
-        // A veces la API devuelve un objeto único
-        await saveClientes([clientesFromApi])
-        setSyncMessage('✓ 1 cliente sincronizado')
+      // La API puede devolver un array o un objeto con propiedad que contiene el array
+      let clientesArray = clientesFromApi
+      
+      // Si es un objeto con una propiedad que contiene los clientes
+      if (clientesFromApi && !Array.isArray(clientesFromApi)) {
+        // Buscar el array dentro del objeto
+        const possibleArrays = Object.values(clientesFromApi).filter(v => Array.isArray(v))
+        if (possibleArrays.length > 0) {
+          clientesArray = possibleArrays[0]
+        } else {
+          // Es un único cliente
+          clientesArray = [clientesFromApi]
+        }
+      }
+      
+      if (Array.isArray(clientesArray) && clientesArray.length > 0) {
+        await saveClientes(clientesArray)
+        setSyncMessage(`✓ ${clientesArray.length} clientes sincronizados`)
       } else {
         setSyncMessage('No se encontraron clientes')
       }

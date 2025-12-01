@@ -24,13 +24,26 @@ export default function Productos() {
     
     try {
       const productosFromApi = await getProductosVenta()
+      console.log('Datos recibidos de Xubio:', productosFromApi)
       
-      if (Array.isArray(productosFromApi)) {
-        await saveProductos(productosFromApi)
-        setSyncMessage(`✓ ${productosFromApi.length} productos sincronizados`)
-      } else if (productosFromApi) {
-        await saveProductos([productosFromApi])
-        setSyncMessage('✓ 1 producto sincronizado')
+      // La API puede devolver un array o un objeto con propiedad que contiene el array
+      let productosArray = productosFromApi
+      
+      // Si es un objeto con una propiedad que contiene los productos
+      if (productosFromApi && !Array.isArray(productosFromApi)) {
+        // Buscar el array dentro del objeto
+        const possibleArrays = Object.values(productosFromApi).filter(v => Array.isArray(v))
+        if (possibleArrays.length > 0) {
+          productosArray = possibleArrays[0]
+        } else {
+          // Es un único producto
+          productosArray = [productosFromApi]
+        }
+      }
+      
+      if (Array.isArray(productosArray) && productosArray.length > 0) {
+        await saveProductos(productosArray)
+        setSyncMessage(`✓ ${productosArray.length} productos sincronizados`)
       } else {
         setSyncMessage('No se encontraron productos')
       }

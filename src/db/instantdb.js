@@ -27,32 +27,59 @@ export const usePresupuestosLocales = () => {
 
 // Funciones para guardar datos
 export const saveClientes = async (clientes) => {
-  const txs = clientes.map(cliente => 
-    db.tx.clientes[cliente.clienteid || db.id()].update({
-      clienteid: cliente.clienteid,
+  // Filtrar clientes sin ID válido y generar IDs para InstantDB
+  const validClientes = clientes.filter(c => c && (c.clienteid || c.ID || c.id))
+  
+  const txs = validClientes.map(cliente => {
+    // Xubio puede usar clienteid, ID, o id
+    const clienteId = cliente.clienteid || cliente.ID || cliente.id
+    const instantId = `cliente-${clienteId}`
+    
+    return db.tx.clientes[instantId].update({
+      clienteid: clienteId,
       nombre: cliente.nombre || cliente.razonSocial || '',
       razonSocial: cliente.razonSocial || '',
-      cuit: cliente.cuit || '',
-      email: cliente.email || '',
-      telefono: cliente.telefono || '',
-      direccion: cliente.direccion || '',
+      cuit: cliente.cuit || cliente.CUIT || '',
+      email: cliente.email || cliente.Email || '',
+      telefono: cliente.telefono || cliente.Telefono || '',
+      direccion: cliente.direccion || cliente.Direccion || '',
       syncedAt: new Date().toISOString()
     })
-  )
+  })
+  
+  if (txs.length === 0) {
+    console.warn('No se encontraron clientes válidos para guardar')
+    return
+  }
+  
   return db.transact(txs)
 }
 
 export const saveProductos = async (productos) => {
-  const txs = productos.map(producto => 
-    db.tx.productos[producto.productoid || db.id()].update({
-      productoid: producto.productoid,
-      nombre: producto.nombre || '',
-      codigo: producto.codigo || '',
-      usrcode: producto.usrcode || '',
-      codigoBarra: producto.codigoBarra || '',
+  // Filtrar productos sin ID válido
+  const validProductos = productos.filter(p => p && (p.productoid || p.ID || p.id))
+  
+  const txs = validProductos.map(producto => {
+    // Xubio puede usar productoid, ID, o id
+    const productoId = producto.productoid || producto.ID || producto.id
+    const instantId = `producto-${productoId}`
+    
+    return db.tx.productos[instantId].update({
+      productoid: productoId,
+      nombre: producto.nombre || producto.Nombre || '',
+      codigo: producto.codigo || producto.Codigo || '',
+      usrcode: producto.usrcode || producto.Usrcode || '',
+      codigoBarra: producto.codigoBarra || producto.CodigoBarra || '',
+      precioVenta: producto.precioVenta || producto.PrecioVenta || 0,
       syncedAt: new Date().toISOString()
     })
-  )
+  })
+  
+  if (txs.length === 0) {
+    console.warn('No se encontraron productos válidos para guardar')
+    return
+  }
+  
   return db.transact(txs)
 }
 
