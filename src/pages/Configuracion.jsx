@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getCredentials, saveCredentials, clearCredentials, testConnection } from '../services/xubioAuth'
+import { getCredentials, saveCredentials, clearCredentials, testConnection, checkServerCredentials } from '../services/xubioAuth'
 import { clearAllData } from '../db/instantdb'
 
 export default function Configuracion() {
@@ -9,8 +9,18 @@ export default function Configuracion() {
   const [empresa, setEmpresa] = useState(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
+  const [hasServerCredentials, setHasServerCredentials] = useState(false)
+  const [useServerCreds, setUseServerCreds] = useState(false)
 
   useEffect(() => {
+    // Verificar si hay credenciales del servidor
+    checkServerCredentials().then(hasServer => {
+      setHasServerCredentials(hasServer)
+      if (hasServer) {
+        setUseServerCreds(true)
+      }
+    })
+
     // Cargar credenciales guardadas
     const credentials = getCredentials()
     if (credentials) {
@@ -31,19 +41,28 @@ export default function Configuracion() {
   }
 
   const handleSave = async () => {
-    if (!clientId || !secretId) {
+    if (!useServerCreds && (!clientId || !secretId)) {
       setMessage({ type: 'error', text: 'Por favor ingresa ambas credenciales' })
       return
     }
 
     setLoading(true)
-    saveCredentials(clientId, secretId)
+    
+    if (!useServerCreds) {
+      saveCredentials(clientId, secretId)
+    } else {
+      // Limpiar credenciales locales si usamos las del servidor
+      clearCredentials()
+    }
     
     const result = await testConnection()
     if (result.success) {
       setIsConnected(true)
       setEmpresa(result.empresa)
-      setMessage({ type: 'success', text: '¡Conexión exitosa! Credenciales guardadas.' })
+      setMessage({ type: 'success', text: useServerCreds 
+        ? '¡Conectado con credenciales del servidor!' 
+        : '¡Conexión exitosa! Credenciales guardadas.' 
+      })
     } else {
       setMessage({ type: 'error', text: `Error de conexión: ${result.error}` })
     }
@@ -57,6 +76,7 @@ export default function Configuracion() {
     setSecretId('')
     setIsConnected(false)
     setEmpresa(null)
+    setUseServerCreds(hasServerCredentials)
     setMessage({ type: 'info', text: 'Credenciales y datos eliminados' })
   }
 
@@ -87,8 +107,29 @@ export default function Configuracion() {
         )}
       </div>
 
+      {/* Credenciales del servidor disponibles */}
+      {hasServerCredentials && (
+        <div className="mb-6 p-4 bg-xubio-500/10 rounded-xl border border-xubio-500/30">
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="useServerCreds"
+              checked={useServerCreds}
+              onChange={(e) => setUseServerCreds(e.target.checked)}
+              className="w-4 h-4 accent-xubio-500"
+            />
+            <label htmlFor="useServerCreds" className="text-xubio-300 font-medium cursor-pointer">
+              Usar credenciales preconfiguradas del servidor
+            </label>
+          </div>
+          <p className="mt-2 pl-7 text-sm text-dark-400">
+            El administrador ha configurado credenciales por defecto. Puedes usarlas o ingresar las tuyas.
+          </p>
+        </div>
+      )}
+
       {/* Formulario de credenciales */}
-      <div className="bg-dark-800/50 rounded-xl p-6 border border-dark-700/50">
+      <div className={`bg-dark-800/50 rounded-xl p-6 border border-dark-700/50 ${useServerCreds ? 'opacity-50' : ''}`}>
         <h2 className="text-lg font-semibold mb-4 text-dark-200">Credenciales OAuth2</h2>
         
         <div className="space-y-4">
@@ -101,7 +142,8 @@ export default function Configuracion() {
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
               placeholder="Tu client-id de Xubio"
-              className="w-full px-4 py-3 bg-dark-900 border border-dark-600 rounded-lg text-dark-100 placeholder-dark-500 focus:outline-none focus:border-xubio-500 focus:ring-1 focus:ring-xubio-500 transition-colors font-mono text-sm"
+              disabled={useServerCreds}
+              className="w-full px-4 py-3 bg-dark-900 border border-dark-600 rounded-lg text-dark-100 placeholder-dark-500 focus:outline-none focus:border-xubio-500 focus:ring-1 focus:ring-xubio-500 transition-colors font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -114,7 +156,8 @@ export default function Configuracion() {
               value={secretId}
               onChange={(e) => setSecretId(e.target.value)}
               placeholder="Tu secret-id de Xubio"
-              className="w-full px-4 py-3 bg-dark-900 border border-dark-600 rounded-lg text-dark-100 placeholder-dark-500 focus:outline-none focus:border-xubio-500 focus:ring-1 focus:ring-xubio-500 transition-colors font-mono text-sm"
+              disabled={useServerCreds}
+              className="w-full px-4 py-3 bg-dark-900 border border-dark-600 rounded-lg text-dark-100 placeholder-dark-500 focus:outline-none focus:border-xubio-500 focus:ring-1 focus:ring-xubio-500 transition-colors font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
         </div>
@@ -155,9 +198,11 @@ export default function Configuracion() {
           <li>• Las credenciales se guardan localmente en tu navegador</li>
           <li>• Puedes obtener tus credenciales en el portal de desarrolladores de Xubio</li>
           <li>• La API utiliza autenticación OAuth2 con client_credentials</li>
+          {hasServerCredentials && (
+            <li className="text-xubio-400">• Hay credenciales preconfiguradas disponibles en el servidor</li>
+          )}
         </ul>
       </div>
     </div>
   )
 }
-

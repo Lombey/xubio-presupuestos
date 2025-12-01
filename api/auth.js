@@ -1,16 +1,39 @@
 // API Route: Autenticación con Xubio
 // POST /api/auth - Obtiene token de acceso
+// GET /api/auth - Verifica si hay credenciales del servidor
 
 const XUBIO_API = 'https://xubio.com/API/1.1'
 
+// Credenciales del servidor (variables de entorno de Vercel)
+const SERVER_CLIENT_ID = process.env.XUBIO_CLIENT_ID
+const SERVER_SECRET_ID = process.env.XUBIO_SECRET_ID
+
 export default async function handler(req, res) {
+  // GET - Verificar si hay credenciales del servidor
+  if (req.method === 'GET') {
+    return res.status(200).json({ 
+      hasServerCredentials: !!(SERVER_CLIENT_ID && SERVER_SECRET_ID)
+    })
+  }
+
   // Solo permitir POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
   try {
-    const { clientId, secretId } = req.body
+    // Usar credenciales del servidor si existen, sino las del body
+    const { clientId: bodyClientId, secretId: bodySecretId, useServerCredentials } = req.body
+    
+    let clientId, secretId
+    
+    if (useServerCredentials && SERVER_CLIENT_ID && SERVER_SECRET_ID) {
+      clientId = SERVER_CLIENT_ID
+      secretId = SERVER_SECRET_ID
+    } else {
+      clientId = bodyClientId
+      secretId = bodySecretId
+    }
 
     if (!clientId || !secretId) {
       return res.status(400).json({ error: 'clientId y secretId son requeridos' })

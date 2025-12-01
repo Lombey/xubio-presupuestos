@@ -1,6 +1,17 @@
 // Servicio de autenticación - Usa API Routes de Vercel
 // Ya no necesitamos proxy CORS porque las llamadas van al mismo dominio
 
+// Verificar si hay credenciales configuradas en el servidor
+export const checkServerCredentials = async () => {
+  try {
+    const response = await fetch('/api/auth')
+    const data = await response.json()
+    return data.hasServerCredentials || false
+  } catch {
+    return false
+  }
+}
+
 // Obtener credenciales del localStorage
 export const getCredentials = () => {
   const stored = localStorage.getItem('xubio_credentials')
@@ -41,7 +52,7 @@ export const getStoredToken = () => {
 }
 
 // Obtener nuevo access_token via API Route
-export const getAccessToken = async () => {
+export const getAccessToken = async (useServerCredentials = false) => {
   // Primero verificar si hay un token válido almacenado
   const storedToken = getStoredToken()
   if (storedToken) {
@@ -49,8 +60,17 @@ export const getAccessToken = async () => {
   }
 
   const credentials = getCredentials()
-  if (!credentials) {
-    throw new Error('No hay credenciales configuradas')
+  const hasLocalCredentials = credentials?.clientId && credentials?.secretId
+  
+  // Si no hay credenciales locales y no usamos las del servidor
+  if (!hasLocalCredentials && !useServerCredentials) {
+    // Verificar si hay credenciales del servidor disponibles
+    const hasServer = await checkServerCredentials()
+    if (hasServer) {
+      useServerCredentials = true
+    } else {
+      throw new Error('No hay credenciales configuradas')
+    }
   }
 
   try {
@@ -60,10 +80,11 @@ export const getAccessToken = async () => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        clientId: credentials.clientId,
-        secretId: credentials.secretId
-      })
+      body: JSON.stringify(
+        useServerCredentials 
+          ? { useServerCredentials: true }
+          : { clientId: credentials.clientId, secretId: credentials.secretId }
+      )
     })
 
     if (!response.ok) {
