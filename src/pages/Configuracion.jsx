@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getCredentials, saveCredentials, clearCredentials, testConnection, checkServerCredentials } from '../services/xubioAuth'
+import { getCredentials, saveCredentials, clearCredentials, testConnection, checkServerCredentials, getStoredToken } from '../services/xubioAuth'
 import { clearAllData } from '../db/instantdb'
 
 export default function Configuracion() {
@@ -26,6 +26,11 @@ export default function Configuracion() {
     if (credentials) {
       setClientId(credentials.clientId)
       setSecretId(credentials.secretId)
+    }
+    
+    // Verificar conexión si hay credenciales locales O token guardado
+    const token = getStoredToken()
+    if (credentials || token) {
       checkConnection()
     }
   }, [])
