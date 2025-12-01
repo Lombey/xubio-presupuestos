@@ -16,8 +16,8 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Token no proporcionado' })
     }
 
-    // Usar /productoVenta directamente (swagger oficial)
-    const response = await fetch(`${XUBIO_API}/productoVenta`, {
+    // Usar /ProductoVentaBean (con P mayúscula según documentación Xubio)
+    const response = await fetch(`${XUBIO_API}/ProductoVentaBean`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
