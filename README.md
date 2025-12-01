@@ -1,6 +1,23 @@
 # Xubio Presupuestos App
 
-Aplicación web simple para gestionar presupuestos a través de la API de Xubio.
+Aplicación web para gestionar presupuestos a través de la API de Xubio.
+
+## Arquitectura
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    VERCEL                               │
+│  ┌─────────────────┐      ┌─────────────────────────┐  │
+│  │   Frontend      │      │   API Routes            │  │
+│  │   React/Vite    │ ───► │   (Serverless)          │  │
+│  └─────────────────┘      └───────────┬─────────────┘  │
+└───────────────────────────────────────┼─────────────────┘
+                                        ▼
+                            ┌─────────────────────┐
+                            │   Xubio API         │
+                            │   xubio.com/API/1.1 │
+                            └─────────────────────┘
+```
 
 ## Características
 
@@ -9,76 +26,98 @@ Aplicación web simple para gestionar presupuestos a través de la API de Xubio.
 - ✅ Descargar presupuestos en PDF
 - ✅ Sincronización de clientes y productos
 - ✅ Cache local con InstantDB
+- ✅ API Routes serverless (sin problemas de CORS)
 - ✅ Interfaz moderna con tema oscuro
 
 ## Tecnologías
 
-- **React** + Vite
-- **TailwindCSS** para estilos
-- **InstantDB** para cache local en tiempo real
-- **Xubio API v1.1** para operaciones de presupuestos
+- **Frontend**: React + Vite + TailwindCSS
+- **Backend**: Vercel Serverless Functions
+- **Cache**: InstantDB
+- **API**: Xubio REST API v1.1
 
-## Instalación
+## Desarrollo Local
 
 ```bash
 # Instalar dependencias
 npm install
 
-# Iniciar servidor de desarrollo
-npm run dev
+# Instalar Vercel CLI
+npm i -g vercel
+
+# Desarrollo local (incluye API Routes)
+vercel dev
 
 # Build para producción
 npm run build
 ```
 
-## Configuración
+## Deploy en Vercel
 
-1. Abre la aplicación en tu navegador
-2. Ve a la pestaña **Configuración**
-3. Ingresa tu `Client ID` y `Secret ID` de Xubio
-4. Haz clic en "Guardar y Conectar"
-
-## Uso
-
-1. **Configuración**: Primero configura las credenciales de la API
-2. **Clientes**: Sincroniza los clientes desde Xubio
-3. **Productos**: Sincroniza los productos de venta desde Xubio
-4. **Presupuestos**: Crea, lista y descarga presupuestos
-
-## API de Xubio
-
-Esta aplicación utiliza los siguientes endpoints de la API de Xubio v1.1:
-
-- `POST /API/Login` - Autenticación OAuth2
-- `GET /miempresa` - Datos de la empresa
-- `GET /cliente` - Listado de clientes
-- `GET /productoVenta` - Listado de productos
-- `GET/POST /presupuesto` - CRUD de presupuestos
-- `GET /ImprimirPdf/presupuesto/{id}` - Descargar PDF
-
-Documentación completa: https://main.xubio.com/API/documentation/index.html
-
-## Deploy en GitHub Pages
+### Opción 1: Desde CLI
 
 ```bash
-# Build
-npm run build
+# Login en Vercel
+vercel login
 
-# El directorio `dist` contiene los archivos para deploy
+# Deploy
+vercel --prod
 ```
+
+### Opción 2: Desde GitHub
+
+1. Ve a [vercel.com](https://vercel.com)
+2. Conecta tu cuenta de GitHub
+3. Importa el repositorio `xubio-presupuestos`
+4. Deploy automático
 
 ## Estructura del Proyecto
 
 ```
-src/
-├── components/     # Componentes UI reutilizables
-├── pages/          # Páginas principales
-├── services/       # Servicios para API de Xubio
-├── db/             # Configuración de InstantDB
-└── api/            # swagger.json de referencia
+xubio-presupuestos/
+├── api/                    # Vercel Serverless Functions
+│   ├── auth.js             # POST /api/auth
+│   ├── empresa.js          # GET /api/empresa
+│   ├── clientes.js         # GET /api/clientes
+│   ├── productos.js        # GET /api/productos
+│   ├── presupuestos.js     # GET/POST /api/presupuestos
+│   ├── presupuestos/[id].js # GET/DELETE /api/presupuestos/:id
+│   └── pdf/[id].js         # GET /api/pdf/:id
+├── src/                    # Frontend React
+│   ├── components/
+│   ├── pages/
+│   ├── services/
+│   └── db/
+├── vercel.json
+└── package.json
 ```
+
+## API Endpoints
+
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/api/auth` | POST | Autenticar y obtener token |
+| `/api/empresa` | GET | Datos de la empresa |
+| `/api/clientes` | GET | Lista de clientes |
+| `/api/productos` | GET | Lista de productos |
+| `/api/presupuestos` | GET | Lista de presupuestos |
+| `/api/presupuestos` | POST | Crear presupuesto |
+| `/api/presupuestos/:id` | DELETE | Eliminar presupuesto |
+| `/api/pdf/:id` | GET | Descargar PDF |
+
+## Uso
+
+1. Abre la app en tu navegador
+2. Ve a **Configuración**
+3. Ingresa tu `Client ID` y `Secret ID` de Xubio
+4. **Guardar y Conectar**
+5. Sincroniza clientes y productos
+6. ¡Crea presupuestos!
+
+## API de Xubio
+
+Documentación: https://main.xubio.com/API/documentation/index.html
 
 ## Licencia
 
 MIT
-

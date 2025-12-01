@@ -1,96 +1,48 @@
-// Servicios para interactuar con los endpoints de Xubio API
-import { authenticatedFetch, getAccessToken, getProxiedUrl, API_BASE } from './xubioAuth'
+// Servicios para interactuar con la API de Xubio via API Routes locales
+import { authenticatedFetch, getAccessToken } from './xubioAuth'
 
 // ==================== CLIENTES ====================
 export const getClientes = async () => {
-  return authenticatedFetch('/cliente')
-}
-
-export const getCliente = async (id) => {
-  return authenticatedFetch(`/cliente/${id}`)
+  return authenticatedFetch('/api/clientes')
 }
 
 // ==================== PRODUCTOS ====================
 export const getProductosVenta = async () => {
-  return authenticatedFetch('/productoVenta')
-}
-
-export const getProductoVenta = async (id) => {
-  return authenticatedFetch(`/productoVenta/${id}`)
+  return authenticatedFetch('/api/productos')
 }
 
 // ==================== PRESUPUESTOS ====================
 export const getPresupuestos = async () => {
-  return authenticatedFetch('/presupuesto')
+  return authenticatedFetch('/api/presupuestos')
 }
 
 export const getPresupuesto = async (id) => {
-  return authenticatedFetch(`/presupuesto/${id}`)
+  return authenticatedFetch(`/api/presupuestos/${id}`)
 }
 
 export const createPresupuesto = async (presupuestoData) => {
-  return authenticatedFetch('/presupuesto', {
+  return authenticatedFetch('/api/presupuestos', {
     method: 'POST',
     body: JSON.stringify(presupuestoData)
   })
 }
 
-export const updatePresupuesto = async (id, presupuestoData) => {
-  return authenticatedFetch(`/presupuesto/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(presupuestoData)
-  })
-}
-
 export const deletePresupuesto = async (id) => {
-  return authenticatedFetch(`/presupuesto/${id}`, {
+  return authenticatedFetch(`/api/presupuestos/${id}`, {
     method: 'DELETE'
   })
 }
 
 // ==================== MI EMPRESA ====================
 export const getMiEmpresa = async () => {
-  return authenticatedFetch('/miempresa')
-}
-
-// ==================== CATÁLOGOS ====================
-export const getPuntosVenta = async () => {
-  return authenticatedFetch('/puntoVenta')
-}
-
-export const getMonedas = async () => {
-  return authenticatedFetch('/moneda')
-}
-
-export const getVendedores = async () => {
-  return authenticatedFetch('/vendedor')
-}
-
-export const getListasPrecios = async () => {
-  return authenticatedFetch('/listaPrecio')
-}
-
-export const getDepositos = async () => {
-  return authenticatedFetch('/deposito')
-}
-
-export const getTasasImpositivas = async () => {
-  return authenticatedFetch('/tasaImpositiva')
-}
-
-export const getCondicionesPago = () => {
-  // Este es un catálogo estático según la documentación
-  return [
-    { id: 1, nombre: 'Cuenta Corriente' },
-    { id: 2, nombre: 'Al Contado' }
-  ]
+  return authenticatedFetch('/api/empresa')
 }
 
 // ==================== PDF ====================
 export const getPresupuestoPDF = async (id) => {
   const token = await getAccessToken()
   
-  const response = await fetch(getProxiedUrl(`${API_BASE}/ImprimirPdf/presupuesto/${id}`), {
+  const response = await fetch(`/api/pdf/${id}`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
@@ -117,7 +69,7 @@ export const buildPresupuestoBean = ({
 }) => {
   return {
     cliente: { clienteid: clienteId },
-    fecha: fecha, // formato: YYYY-MM-DD
+    fecha: fecha,
     fechaVto: fechaVto,
     descripcion: descripcion || '',
     puntoVenta: puntoVentaId ? { puntoVentaId: puntoVentaId } : undefined,
@@ -133,3 +85,10 @@ export const buildPresupuestoBean = ({
   }
 }
 
+// Condiciones de pago (catálogo estático)
+export const getCondicionesPago = () => {
+  return [
+    { id: 1, nombre: 'Cuenta Corriente' },
+    { id: 2, nombre: 'Al Contado' }
+  ]
+}

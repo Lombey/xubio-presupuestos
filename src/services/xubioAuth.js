@@ -1,32 +1,5 @@
-// Servicio de autenticación OAuth2 para Xubio API
-
-// Proxy CORS para evitar bloqueos del navegador
-const CORS_PROXY_MODE = 'thingproxy'
-
-const CORS_PROXIES = {
-  direct: '',
-  corsproxy: 'https://corsproxy.io/?',
-  allorigins: 'https://api.allorigins.win/raw?url=',
-  thingproxy: 'https://thingproxy.freeboard.io/fetch/'
-}
-
-const getProxiedUrl = (url) => {
-  const proxy = CORS_PROXIES[CORS_PROXY_MODE] || ''
-  if (!proxy) return url
-  // Algunos proxies no necesitan encoding
-  if (CORS_PROXY_MODE === 'corsproxy' || CORS_PROXY_MODE === 'thingproxy') {
-    return `${proxy}${url}`
-  }
-  return `${proxy}${encodeURIComponent(url)}`
-}
-
-// Xubio API - URLs según documentación oficial
-const BASE_URL = 'https://xubio.com'
-const API_BASE = `${BASE_URL}/API/1.1`
-const TOKEN_URL = `${API_BASE}/TokenEndpoint`
-
-// Exportar para uso en otros módulos
-export { getProxiedUrl, API_BASE }
+// Servicio de autenticación - Usa API Routes de Vercel
+// Ya no necesitamos proxy CORS porque las llamadas van al mismo dominio
 
 // Obtener credenciales del localStorage
 export const getCredentials = () => {
@@ -67,7 +40,7 @@ export const getStoredToken = () => {
   return null
 }
 
-// Obtener nuevo access_token
+// Obtener nuevo access_token via API Route
 export const getAccessToken = async () => {
   // Primero verificar si hay un token válido almacenado
   const storedToken = getStoredToken()
@@ -81,27 +54,27 @@ export const getAccessToken = async () => {
   }
 
   try {
-    // Usar Basic Auth según documentación de Xubio
-    const basicAuth = btoa(`${credentials.clientId}:${credentials.secretId}`)
-    
-    const response = await fetch(getProxiedUrl(TOKEN_URL), {
+    // Llamar a nuestra API Route (mismo dominio = sin CORS)
+    const response = await fetch('/api/auth', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${basicAuth}`
+        'Content-Type': 'application/json',
       },
-      body: 'grant_type=client_credentials'
+      body: JSON.stringify({
+        clientId: credentials.clientId,
+        secretId: credentials.secretId
+      })
     })
 
     if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Error de autenticación: ${response.status} - ${errorText}`)
+      const errorData = await response.json()
+      throw new Error(errorData.error || `Error de autenticación: ${response.status}`)
     }
 
     const data = await response.json()
     
     // Guardar el token con tiempo de expiración
-    const expiresIn = data.expires_in || 3600 // Default 1 hora
+    const expiresIn = data.expires_in || 3600
     const expiresAt = new Date(Date.now() + (expiresIn * 1000))
     
     localStorage.setItem('xubio_token', JSON.stringify({
@@ -121,7 +94,7 @@ export const getAccessToken = async () => {
 export const testConnection = async () => {
   try {
     const token = await getAccessToken()
-    const response = await fetch(getProxiedUrl(`${API_BASE}/miempresa`), {
+    const response = await fetch('/api/empresa', {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -129,7 +102,8 @@ export const testConnection = async () => {
     })
     
     if (!response.ok) {
-      throw new Error(`Error: ${response.status}`)
+      const errorData = await response.json()
+      throw new Error(errorData.error || `Error: ${response.status}`)
     }
     
     const data = await response.json()
@@ -139,7 +113,7 @@ export const testConnection = async () => {
   }
 }
 
-// Helper para hacer peticiones autenticadas
+// Helper para hacer peticiones autenticadas a nuestras API Routes
 export const authenticatedFetch = async (endpoint, options = {}) => {
   const token = await getAccessToken()
   
@@ -148,7 +122,7 @@ export const authenticatedFetch = async (endpoint, options = {}) => {
     'Content-Type': 'application/json'
   }
 
-  const response = await fetch(getProxiedUrl(`${API_BASE}${endpoint}`), {
+  const response = await fetch(endpoint, {
     ...options,
     headers: {
       ...defaultHeaders,
@@ -157,12 +131,11 @@ export const authenticatedFetch = async (endpoint, options = {}) => {
   })
 
   if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`API Error ${response.status}: ${errorText}`)
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.error || `API Error ${response.status}`)
   }
 
   // Algunos endpoints pueden devolver vacío
   const text = await response.text()
   return text ? JSON.parse(text) : null
 }
-
